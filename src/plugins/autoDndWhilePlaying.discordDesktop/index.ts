@@ -44,18 +44,26 @@ export default definePlugin({
     description: "Automatically updates your online status (online, idle, dnd) when launching games",
     authors: [Devs.thororen],
     settings,
-    flux: {
+flux: {
         RUNNING_GAMES_CHANGE({ games }) {
             const status = StatusSettings.getSetting();
+            
+            // Definiujemy nazwę gry, która ma aktywować status
+            const targetGameName = "Counter-Strike 2"; 
 
-            if (games.length > 0) {
+            // Sprawdzamy, czy jakakolwiek z uruchomionych gier pasuje do naszej nazwy
+            const isPlayingTargetGame = games.some(game => game.name === targetGameName);
+
+            if (isPlayingTargetGame) {
+                // Jeśli gramy w konkretną grę i status nie jest jeszcze ustawiony
                 if (status !== settings.store.statusToSet) {
                     savedStatus = status;
                     StatusSettings.updateSetting(settings.store.statusToSet);
                 }
-            } else if (savedStatus && savedStatus !== settings.store.statusToSet) {
+            } else if (savedStatus) {
+                // Jeśli wyłączyliśmy grę (lub nie ma jej na liście), przywracamy poprzedni status
                 StatusSettings.updateSetting(savedStatus);
+                savedStatus = null; // Czyścimy zmienną, żeby nie nadpisywać statusu w kółko
             }
         }
     }
-});
